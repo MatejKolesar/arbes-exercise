@@ -17,18 +17,26 @@ public class BillCalculator implements TelephoneBillCalculator {
     @Override
     public BigDecimal calculate(String phoneLog) {
         this.fillLog(phoneLog);
-        BigDecimal sum = new BigDecimal("0");
+        BigDecimal sum = BigDecimal.ZERO;
 
         for(Long key : this.log.keySet()) {
             for (User user : this.log.get(key)) {
-                System.out.println(calculateBill(user.startTime,user.endTime));
+                sum = sum.add( new BigDecimal(calculateBill(user.startTime,user.endTime)));
+
             }
         }
-
-
         return sum;
     }
+
+
     private static long calculateBill(Date startTime,Date endTime) {
+
+        // Zasekol som sa s parsovanim casu pre pripad ked ide call cez den napr zacal 1.1 a skoncil 2.1 a nestihol
+        // som to osetrit uz mi stacilo vypocitat duration v minutach a vratit hodnotu
+
+        // Moj napad bol oseuknut casti hovoru ktore boli v rozhasu 8 az 16 tam vypocit normalnu cenu a zvysok pocitat
+        // ako zlavu
+
         Calendar calendar = GregorianCalendar.getInstance();
         calendar.setTime(startTime);
         int startHour = calendar.get(Calendar.HOUR_OF_DAY);
@@ -44,6 +52,8 @@ public class BillCalculator implements TelephoneBillCalculator {
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH));
         Date end = formatDate(time2);
+
+
 
 
         calendar.setTime(endTime);
@@ -88,7 +98,7 @@ public class BillCalculator implements TelephoneBillCalculator {
         String[] rows = log.split("\n");
 
         for(String row:rows){
-            String tmp[] = row.split(",");
+            String[] tmp = row.split(",");
             Long number;
             try {
                 number = Long.parseLong(tmp[0].trim());
